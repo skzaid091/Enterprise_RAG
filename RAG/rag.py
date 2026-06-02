@@ -9,6 +9,7 @@ from llms.llm_service import LLM_Service
 from memory.conversation_memory import ConversationMemory
 from query_rewriting.query_rewriter import QueryRewriter
 from prompts.prompt import Prompt_Generator
+from rerankers.reranker import Reranker
 
 from utilities.utils import *
 
@@ -63,6 +64,10 @@ class RAG:
         self.enable_query_rewriting = config["enable_query_rewriting"]
         self.query_rewriter = QueryRewriter(self.llm_model)
 
+        reranker_model_path = config["reranker_model_path"]
+        self.reranker = Reranker(reranker_model_path, config["reranking_top_k"])
+        self.enable_reranking = config["enable_reranking"]
+
         self.prompt_generator = Prompt_Generator()
     
 
@@ -71,10 +76,20 @@ class RAG:
             print("Provide the 'retrieval_evaluation_data_path' in config.")
             return
         
-        retrieval_evaluater(self, 
-                            self.config["retrieval_evaluation_data_path"], 
-                            self.config["retriever_type"])
+        retrieval_evaluator(
+            self, 
+            self.config["retrieval_evaluation_data_path"], 
+            self.config["retriever_type"]
+        )
         print("\nRetrieval Evaluation Completed.")
+    
+
+    def evaluate_answers(self):
+        answer_evaluator(
+            self, 
+            self.config["retrieval_evaluation_data_path"]
+        )
+        print("\nAnswer Evaluation Completed.")
 
 
     def build_history_context(self):
@@ -155,9 +170,12 @@ class RAG:
         return final_sources
 
 
-    def ask(self, query):
+    def ask(self, query, hide_auto_regressive_output=False):
         prompt, sources = self.build_prompt(query)
-        response = self.llm_model.generate(prompt)
+        response = self.llm_model.generate(
+            prompt, 
+            hide_auto_regressive_output=hide_auto_regressive_output
+        )
 
         self.memory.add_interaction(query, response)
 
@@ -170,18 +188,32 @@ class RAG:
 
 
     def retrieve_with_faiss(self, query):
-        result = self.retriever.retrieve(query)
-        sources = self.get_sources(result)
-        context = self.context_builder.build_context(result)
+        results = self.retriever.retrieve(query)
+
+        if self.enable_reranking:
+            results = self.reranker.rerank(
+                query,
+                results
+            )
+
+        sources = self.get_sources(results)
+        context = self.context_builder.build_context(results)
 
         return context, sources
 
 
     def retrieve_with_bm25(self, query):
 
-        result = self.bm25_retriever.retrieve(query)
-        sources = self.get_sources(result)
-        context = self.context_builder.build_context(result)
+        results = self.bm25_retriever.retrieve(query)
+
+        if self.enable_reranking:
+            results = self.reranker.rerank(
+                query,
+                results
+            )
+
+        sources = self.get_sources(results)
+        context = self.context_builder.build_context(results)
 
         return context, sources
 
@@ -208,6 +240,12 @@ class RAG:
             if key not in seen:
                 seen.add(key)
                 unique_results.append(result)
+        
+        if self.enable_reranking:
+            unique_results = self.reranker.rerank(
+                query,
+                unique_results
+            )
 
         sources = self.get_sources(unique_results)
 

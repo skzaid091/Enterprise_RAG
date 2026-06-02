@@ -5,7 +5,7 @@ class LLM_Service:
     def __init__(self, model):
         self.model = model
 
-    def generate(self, prompt):
+    def generate(self, prompt, hide_auto_regressive_output=False):
 
         stream = ollama.chat(
             model=self.model,
@@ -21,16 +21,20 @@ class LLM_Service:
         response = ""
 
         for chunk in stream:
+
             token = chunk["message"]["content"]
 
-            print(
-                token,
-                end="",
-                flush=True
-            )
+            if not hide_auto_regressive_output:
+
+                print(
+                    token,
+                    end="",
+                    flush=True
+                )
 
             response += token
 
-        print()  # newline after streaming
+        if not hide_auto_regressive_output:
+            print()
 
         return response

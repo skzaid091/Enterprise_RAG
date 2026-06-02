@@ -19,11 +19,15 @@ config = {
 
     "llm_model" :"qwen2.5:3b",
     "embedding_model_path": "../models/embeddings/bge-base-en-v1.5",
+    "reranker_model_path": "../models/rerankers/bge-reranker-base",
 
     "top_k": 5,
+    "reranking_top_k": 5,
+
     "retriever_type": "hybrid",
 
     "conversation_max_history": 5,
 
-    "enable_query_rewriting": True
+    "enable_query_rewriting": True,
+    "enable_reranking": True
 }   
