@@ -1,4 +1,6 @@
-def retrieval_evaluater(rag, evaluation_dataset, retriever_type):
+import json
+
+def retrieval_evaluater(rag, evaluation_data_path, retriever_type):
 
     if retriever_type == "faiss":
         active_retriever = rag.retrieve_with_faiss
@@ -9,13 +11,16 @@ def retrieval_evaluater(rag, evaluation_dataset, retriever_type):
     elif retriever_type == "hybrid":
         active_retriever = rag.retrieve_with_hybrid
 
+    with open(evaluation_data_path, "r") as file:
+        evaluation_dataset = json.load(file)
+
     avg_score = 0
     for sample in evaluation_dataset:
 
-        results = active_retriever(sample["question"])
+        context, _ = active_retriever(sample["question"])
         
         score = score_answer(
-            results["context"],
+            context,
             sample["expected_keywords"]
         )
 

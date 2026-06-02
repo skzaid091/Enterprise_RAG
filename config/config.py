@@ -4,7 +4,7 @@ config = {
     "data/uploads/NEURAL_MACHINE_TRANSLATION.pdf"
     ],
 
-    "retrieval_evaluation_data_path": "../data/evaluation/retrieval/research_paper_data.txt",
+    "retrieval_evaluation_data_path": "../data/evaluation/retrieval/research_paper_data.json",
 
     "chunk_size": 500, 
     "overlap": 50,
@@ -23,5 +23,7 @@ config = {
     "top_k": 5,
     "retriever_type": "hybrid",
 
-    "conversation_max_history": 5
+    "conversation_max_history": 5,
+
+    "enable_query_rewriting": True
 }   

@@ -7,6 +7,8 @@ from retrievers.bm25_retriever import BM25_Retriever
 from context_building.context_builder import ContextBuilder
 from llms.llm_service import LLM_Service
 from memory.conversation_memory import ConversationMemory
+from query_rewriting.query_rewriter import QueryRewriter
+from prompts.prompt import Prompt_Generator
 
 from utilities.utils import *
 
@@ -57,6 +59,11 @@ class RAG:
         self.memory = ConversationMemory(
             max_history=config["conversation_max_history"]
         )
+
+        self.enable_query_rewriting = config["enable_query_rewriting"]
+        self.query_rewriter = QueryRewriter(self.llm_model)
+
+        self.prompt_generator = Prompt_Generator()
     
 
     def evaluate_retrieval(self):
@@ -89,40 +96,18 @@ class RAG:
         return context
 
 
-    def build_prompt(self, query, context, history):
-        prompt = f"""You are a helpful AI assistant.
+    def build_prompt(self, query):
+        
+        history = None
+        if not self.enable_query_rewriting:
+            history = self.build_history_context()
 
-        Answer the user's question using only the provided retrieved context.
+        query = self.modify_query(query)
+        context, sources = self.active_retriever(query)
 
-        Requirements:
-        1. Give a concise answer.
-        2. Focus only on information relevant to the question.
-        3. Do not include unrelated details.
-        4. If the answer is not in the retrieved context, say so.
-        5. Use conversation history only to understand references such as:
-        - "it"
-        - "this"
-        - "that"
-        - "the above method"
-        6. Do not invent information from conversation history.
+        prompt = self.prompt_generator.get_rag_prompt(context, query, history=history)
 
-        When writing equations:
-        1. Do not use LaTeX.
-        2. Use plain text mathematical notation.
-
-        Conversation History:
-        {history}
-
-        Retrieved Context:
-        {context}
-
-        Current Question:
-        {query}
-
-        Answer:
-        """
-
-        return prompt
+        return prompt, sources
 
 
     def get_sources(self, result):
@@ -171,18 +156,10 @@ class RAG:
 
 
     def ask(self, query):
-
-        context, sources = self.active_retriever(query)
-
-        history = self.build_history_context()
-        prompt = self.build_prompt(query, context, history)
-        
+        prompt, sources = self.build_prompt(query)
         response = self.llm_model.generate(prompt)
 
-        self.memory.add_interaction(
-            query,
-            response
-        )
+        self.memory.add_interaction(query, response)
 
         answer = {
             "answer": response, 
@@ -239,3 +216,18 @@ class RAG:
         )
 
         return context, sources
+
+
+    def modify_query(self, query):
+
+        if self.enable_query_rewriting:
+            history = self.build_history_context()
+
+            rewritten_query = self.query_rewriter.rewrite(
+                history,
+                query
+            )
+
+            return rewritten_query
+        
+        return query

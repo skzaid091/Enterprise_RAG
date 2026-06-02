@@ -1,4 +1,5 @@
-{
+[
+     {
         "question": "What is self attention?",
         "expected_keywords": [
             "attention",
@@ -144,7 +145,7 @@
         "document": "transformer",
         "difficulty": "medium"
     },
-    
+
     {
         "question": "What is the context vector c_i?",
         "expected_keywords": [
@@ -263,7 +264,7 @@
         "document": "bahdanau",
         "difficulty": "hard"
     },
-	
+
     {
         "question": "How is Transformer attention different from Bahdanau attention?",
         "expected_keywords": [
