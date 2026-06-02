@@ -1,3 +1,4 @@
+import os
 import pymupdf
 from dataclasses import dataclass
 
