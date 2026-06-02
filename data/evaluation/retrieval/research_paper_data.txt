@@ -1,0 +1,313 @@
+{
+        "question": "What is self attention?",
+        "expected_keywords": [
+            "attention",
+            "sequence",
+            "representation",
+            "positions"
+        ],
+        "document": "transformer",
+        "difficulty": "easy"
+    },
+
+    {
+        "question": "What is scaled dot product attention?",
+        "expected_keywords": [
+            "query",
+            "key",
+            "value",
+            "softmax",
+            "sqrt"
+        ],
+        "document": "transformer",
+        "difficulty": "easy"
+    },
+
+    {
+        "question": "Why do we divide by sqrt(d_k)?",
+        "expected_keywords": [
+            "large",
+            "dot product",
+            "softmax",
+            "gradients",
+            "scale"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What are queries, keys and values?",
+        "expected_keywords": [
+            "query",
+            "key",
+            "value",
+            "attention"
+        ],
+        "document": "transformer",
+        "difficulty": "easy"
+    },
+
+    {
+        "question": "What is multi-head attention?",
+        "expected_keywords": [
+            "multiple",
+            "heads",
+            "parallel",
+            "attention"
+        ],
+        "document": "transformer",
+        "difficulty": "easy"
+    },
+
+    {
+        "question": "How is multi-head attention computed?",
+        "expected_keywords": [
+            "projection",
+            "heads",
+            "concatenate",
+            "attention"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What are the benefits of multi-head attention?",
+        "expected_keywords": [
+            "subspaces",
+            "parallel",
+            "positions",
+            "information"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What is encoder-decoder attention?",
+        "expected_keywords": [
+            "encoder",
+            "decoder",
+            "keys",
+            "values",
+            "queries"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What is the computational complexity of self attention?",
+        "expected_keywords": [
+            "complexity",
+            "sequence",
+            "positions",
+            "self attention"
+        ],
+        "document": "transformer",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "How is self attention different from recurrent networks?",
+        "expected_keywords": [
+            "recurrent",
+            "parallel",
+            "dependencies",
+            "positions"
+        ],
+        "document": "transformer",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "What are positional encodings?",
+        "expected_keywords": [
+            "position",
+            "sequence",
+            "sinusoidal",
+            "encoding"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "Why are positional encodings needed?",
+        "expected_keywords": [
+            "position",
+            "order",
+            "sequence",
+            "attention"
+        ],
+        "document": "transformer",
+        "difficulty": "medium"
+    },
+    
+    {
+        "question": "What is the context vector c_i?",
+        "expected_keywords": [
+            "context vector",
+            "annotations",
+            "input sequence"
+        ],
+        "document": "bahdanau",
+        "difficulty": "easy"
+    },
+
+    {
+        "question": "How is the context vector c_i computed?",
+        "expected_keywords": [
+            "weighted sum",
+            "alpha",
+            "annotations",
+            "h_j"
+        ],
+        "document": "bahdanau",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What is the alignment model?",
+        "expected_keywords": [
+            "alignment",
+            "score",
+            "feedforward",
+            "network"
+        ],
+        "document": "bahdanau",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "How are attention weights alpha_ij computed?",
+        "expected_keywords": [
+            "softmax",
+            "e_ij",
+            "probability",
+            "alignment"
+        ],
+        "document": "bahdanau",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What does alpha_ij represent?",
+        "expected_keywords": [
+            "probability",
+            "alignment",
+            "source word",
+            "target word"
+        ],
+        "document": "bahdanau",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What does e_ij represent?",
+        "expected_keywords": [
+            "score",
+            "alignment",
+            "match",
+            "annotation"
+        ],
+        "document": "bahdanau",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "What information is stored in annotation h_j?",
+        "expected_keywords": [
+            "annotation",
+            "input sequence",
+            "word",
+            "information"
+        ],
+        "document": "bahdanau",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "Why was attention introduced in neural machine translation?",
+        "expected_keywords": [
+            "long sentences",
+            "fixed length",
+            "encoder decoder",
+            "attention"
+        ],
+        "document": "bahdanau",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "What problem does Bahdanau attention solve?",
+        "expected_keywords": [
+            "fixed length",
+            "information bottleneck",
+            "long sentences",
+            "attention"
+        ],
+        "document": "bahdanau",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "How does the decoder use the context vector?",
+        "expected_keywords": [
+            "decoder",
+            "context vector",
+            "hidden state",
+            "prediction"
+        ],
+        "document": "bahdanau",
+        "difficulty": "hard"
+    },
+	
+    {
+        "question": "How is Transformer attention different from Bahdanau attention?",
+        "expected_keywords": [
+            "self attention",
+            "alignment",
+            "transformer",
+            "bahdanau"
+        ],
+        "document": "both",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "Which paper introduced attention first?",
+        "expected_keywords": [
+            "bahdanau",
+            "attention",
+            "translation"
+        ],
+        "document": "both",
+        "difficulty": "medium"
+    },
+
+    {
+        "question": "How does self attention differ from alignment based attention?",
+        "expected_keywords": [
+            "self attention",
+            "alignment",
+            "sequence",
+            "decoder"
+        ],
+        "document": "both",
+        "difficulty": "hard"
+    },
+
+    {
+        "question": "Compare context vectors in Bahdanau attention and Transformer attention.",
+        "expected_keywords": [
+            "context vector",
+            "attention",
+            "transformer",
+            "bahdanau"
+        ],
+        "document": "both",
+        "difficulty": "hard"
+    }
+]
