@@ -280,54 +280,6 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Quick PDF upload ──
-    st.markdown('<div class="sb-label">Add Documents</div>', unsafe_allow_html=True)
-
-    sb_uploads = st.file_uploader(
-        "Upload PDFs",
-        type=["pdf"],
-        accept_multiple_files=True,
-        label_visibility="collapsed",
-    )
-
-    if sb_uploads:
-        for f in sb_uploads:
-            st.markdown(f"""
-            <div class="pdf-chip">
-                <span>📄</span>
-                <span class="chip-name">{f.name}</span>
-                <span class="chip-size">{fmt_size(f.size)}</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.markdown('<div class="btn-success">', unsafe_allow_html=True)
-        if st.button("⚡ Save & Rebuild KB", use_container_width=True):
-            for f in sb_uploads:
-                with open(os.path.join(UPLOAD_DIR, f.name), "wb") as out:
-                    out.write(f.getbuffer())
-            build_knowledge_base()
-            st.success(f"✓ {len(sb_uploads)} file(s) added to knowledge base.")
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    else:
-        existing = get_uploaded_pdfs()
-        if existing:
-            for name in existing:
-                st.markdown(f"""
-                <div class="pdf-chip">
-                    <span>📄</span>
-                    <span class="chip-name">{name}</span>
-                    <span class="chip-ok">✓</span>
-                </div>
-                """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style="text-align:center;padding:1rem 0.4rem;color:var(--text-dim);font-size:0.75rem;line-height:1.65;">
-                Drop PDFs here to populate<br>the knowledge base
-            </div>
-            """, unsafe_allow_html=True)
-
 
 # ============================================================
 # CHAT PAGE

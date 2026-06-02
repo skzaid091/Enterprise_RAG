@@ -1,6 +1,6 @@
 {
     "documents": [
-        "data/uploads/My_Updated_Resume.pdf"
+        "data/uploads/ZAID_SHAIKH_New_Resume.pdf"
     ],
     "retrieval_evaluation_data_path": "data/evaluation/retrieval/research_paper_data.json",
     "chunk_size": 150,
@@ -13,7 +13,7 @@
     },
     "llm_model": "qwen2.5:3b",
     "embedding_model_path": "models/embeddings/bge-base-en-v1.5",
-    "reranker_model_path": "models/rerankers/bge-reranker-base",
+    "reranker_model_path": "models/rerankers/ms-marco-MiniLM-L-6-v2",
     "top_k": 5,
     "reranking_top_k": 6,
     "retriever_type": "hybrid",
