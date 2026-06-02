@@ -1,40 +1,22 @@
-import ollama
+from groq import Groq
+
 
 class LLM_Service:
 
-    def __init__(self, model):
+    def __init__(self, api_key, model):
+        self.client = Groq(api_key=api_key)
         self.model = model
 
-    def generate(self, prompt, hide_auto_regressive_output=False):
+    def generate(self, prompt, hide_auto_regressive_output=True):
 
-        stream = ollama.chat(
+        response = self.client.chat.completions.create(
             model=self.model,
             messages=[
                 {
                     "role": "user",
                     "content": prompt
                 }
-            ],
-            stream=True
+            ]
         )
 
-        response = ""
-
-        for chunk in stream:
-
-            token = chunk["message"]["content"]
-
-            if not hide_auto_regressive_output:
-
-                print(
-                    token,
-                    end="",
-                    flush=True
-                )
-
-            response += token
-
-        if not hide_auto_regressive_output:
-            print()
-
-        return response
+        return response.choices[0].message.content

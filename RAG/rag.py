@@ -16,7 +16,7 @@ from utilities.utils import *
 
 class RAG:
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, groq_api_key=None):
         if not config:
             print("Please provide configurations.")
 
@@ -54,6 +54,7 @@ class RAG:
         self.context_builder = ContextBuilder()
 
         self.llm_model = LLM_Service(
+            groq_api_key, 
             config["llm_model"]
         )
 
@@ -170,7 +171,7 @@ class RAG:
         return final_sources
 
 
-    def ask(self, query, hide_auto_regressive_output=False):
+    def ask(self, query, hide_auto_regressive_output=False, groq_api_key=None):
         prompt, sources = self.build_prompt(query)
         response = self.llm_model.generate(
             prompt, 

@@ -1,5 +1,10 @@
+from pull_models import download_prerequisites
+download_prerequisites()
+
 import os
 import streamlit as st
+
+groq_api_key = st.secrets["GROQ_API_KEY"]
 
 from config.config_loader import load_config, save_config
 from RAG.rag import RAG
@@ -213,7 +218,7 @@ def build_knowledge_base():
     config["use_existing_data"] = False
     save_config(config)
     with st.spinner("Building knowledge base… this may take a moment."):
-        RAG(config)
+        RAG(config, groq_api_key=groq_api_key)
     config["use_existing_data"] = True
     save_config(config)
     st.session_state.rag = None
@@ -330,7 +335,7 @@ def show_chat():
     # Init RAG
     if st.session_state.rag is None:
         with st.spinner("Loading RAG system…"):
-            st.session_state.rag = RAG(config=config)
+            st.session_state.rag = RAG(config, groq_api_key=groq_api_key)
 
     # Message history
     if not st.session_state.messages:
@@ -356,7 +361,7 @@ def show_chat():
 
         with st.spinner("Searching knowledge base…"):
             response = st.session_state.rag.ask(
-                query, hide_auto_regressive_output=True
+                query, hide_auto_regressive_output=True, groq_api_key=groq_api_key
             )
 
         answer  = response["answer"]

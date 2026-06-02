@@ -17,7 +17,8 @@ config = {
         "knowledge_base_path": "data/metadata/knowledge_base.pkl"
     },
 
-    "llm_model" :"qwen2.5:3b",
+    "llm_model" :"llama-3.3-70b-versatile",
+
     "embedding_model_path": "models/embeddings/bge-base-en-v1.5",
     "reranker_model_path": "models/rerankers/bge-reranker-base",
 
