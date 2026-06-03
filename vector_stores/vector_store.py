@@ -11,6 +11,10 @@ class FaissStore:
         self.chunks_file_path = embeddings_paths["chunks_file_path"]
         self.knowledge_base_path = embeddings_paths["knowledge_base_path"]
 
+        os.makedirs(os.path.dirname(self.index_file_path),     exist_ok=True)
+        os.makedirs(os.path.dirname(self.chunks_file_path),    exist_ok=True)
+        os.makedirs(os.path.dirname(self.knowledge_base_path), exist_ok=True)
+
         self.index = None
         self.chunk_metadata = None
         self.chunks = None
