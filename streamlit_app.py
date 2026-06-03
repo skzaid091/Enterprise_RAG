@@ -2,6 +2,8 @@ from pull_models import download_prerequisites
 download_prerequisites()
 
 import os
+import time
+import shutil
 import streamlit as st
 
 groq_api_key = st.secrets["GROQ_API_KEY"]
@@ -42,6 +44,8 @@ st.markdown("""
     --danger:       #f87171;
     --radius:       12px;
     --radius-lg:    18px;
+    --user-bubble:  #1e3a5f;
+    --ai-bubble:    #161924;
 }
 
 html, body, [class*="css"] { font-family: 'Syne', sans-serif !important; color: var(--text-primary); }
@@ -109,10 +113,138 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif !important; color: 
 .es-title       { font-size: 0.98rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem; }
 .es-desc        { font-size: 0.8rem; line-height: 1.65; }
 
-/* ── Chat messages ── */
-[data-testid="stChatMessage"] { background: transparent !important; padding: 0.85rem 1.1rem !important; border-bottom: 1px solid var(--border) !important; }
-[data-testid="stChatMessage"]:last-child { border-bottom: none !important; }
-[data-testid="stChatMessageContent"] p { font-size: 0.88rem !important; line-height: 1.68 !important; color: var(--text-primary) !important; margin: 0 !important; }
+/* ── MODERN CHAT BUBBLES ── */
+[data-testid="stChatMessage"] {
+    background: transparent !important;
+    padding: 0.5rem 0.2rem !important;
+    border-bottom: none !important;
+}
+
+/* Hide the default Streamlit avatar area */
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"],
+[data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"] {
+    display: none !important;
+}
+
+/* User message bubble */
+[data-testid="stChatMessage"][data-testid*="user"],
+.stChatMessage:has([data-testid="chatAvatarIcon-user"]) [data-testid="stChatMessageContent"] {
+    background: linear-gradient(135deg, #1e3a5f, #1a2d4a) !important;
+    border: 1px solid rgba(79,156,249,0.25) !important;
+    border-radius: 18px 18px 4px 18px !important;
+    padding: 0.85rem 1.1rem !important;
+    max-width: 78% !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    box-shadow: 0 2px 12px rgba(79,156,249,0.1) !important;
+}
+
+/* Assistant message bubble */
+.stChatMessage:has([data-testid="chatAvatarIcon-assistant"]) [data-testid="stChatMessageContent"] {
+    background: var(--ai-bubble) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 18px 18px 18px 4px !important;
+    padding: 0.85rem 1.1rem !important;
+    max-width: 85% !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+}
+
+[data-testid="stChatMessageContent"] p {
+    font-size: 0.875rem !important;
+    line-height: 1.7 !important;
+    color: var(--text-primary) !important;
+    margin: 0 !important;
+}
+
+/* Chat message row layout */
+[data-testid="stChatMessage"] > div {
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 10px !important;
+}
+
+/* Chat avatar circles */
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+}
+.chat-avatar-user { background: linear-gradient(135deg, var(--accent), #3b82f6); }
+.chat-avatar-ai   { background: linear-gradient(135deg, var(--accent-2), #7c3aed); }
+
+/* Modern chat wrapper */
+.chat-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem 0;
+}
+
+/* User message row */
+.msg-row-user {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 10px;
+    animation: slideInRight 0.22s ease;
+}
+/* AI message row */
+.msg-row-ai {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    gap: 10px;
+    animation: slideInLeft 0.22s ease;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.bubble {
+    padding: 0.75rem 1.05rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    max-width: 78%;
+    word-wrap: break-word;
+}
+.bubble-user {
+    background: linear-gradient(135deg, #1e3a5f, #1a2d4a);
+    border: 1px solid rgba(79,156,249,0.28);
+    border-radius: 18px 18px 4px 18px;
+    color: #d4e6ff;
+    box-shadow: 0 2px 14px rgba(79,156,249,0.1);
+}
+.bubble-ai {
+    background: #161924;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px 18px 18px 4px;
+    color: var(--text-primary);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.25);
+}
+.msg-ts {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    margin-top: 4px;
+    text-align: right;
+}
+.msg-ts-left { text-align: left; }
+
+/* ── Chat input ── */
 [data-testid="stChatInput"] { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius-lg) !important; transition: border-color 0.18s !important; }
 [data-testid="stChatInput"]:focus-within { border-color: var(--border-focus) !important; box-shadow: 0 0 0 3px rgba(79,156,249,0.07) !important; }
 [data-testid="stChatInput"] textarea { background: transparent !important; color: var(--text-primary) !important; font-family: 'Syne', sans-serif !important; font-size: 0.87rem !important; }
@@ -139,6 +271,11 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif !important; color: 
 .di-name   { flex: 1; font-size: 0.8rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .doc-empty { font-size: 0.8rem; color: var(--text-dim); padding: 0.5rem 0; }
 
+/* ── Delete doc row layout ── */
+.del-doc-row { display: flex; align-items: center; gap: 8px; padding: 0.45rem 0; border-bottom: 1px solid var(--border); }
+.del-doc-name { flex: 1; font-size: 0.82rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.del-doc-size { font-size: 0.68rem; color: var(--text-dim); font-family: 'DM Mono', monospace; flex-shrink: 0; }
+
 /* ── Form elements ── */
 .stNumberInput input, .stTextInput input { background: var(--bg-hover) !important; border: 1px solid var(--border) !important; border-radius: 9px !important; color: var(--text-primary) !important; font-family: 'Syne', sans-serif !important; font-size: 0.84rem !important; transition: border-color 0.16s, box-shadow 0.16s !important; }
 .stNumberInput input:focus, .stTextInput input:focus { border-color: var(--border-focus) !important; box-shadow: 0 0 0 3px rgba(79,156,249,0.07) !important; outline: none !important; }
@@ -161,6 +298,7 @@ label[data-testid="stWidgetLabel"], .stSlider label, .stToggle label { font-size
 .btn-success button:hover { background: rgba(52,211,153,0.17) !important; color: var(--success) !important; box-shadow: 0 4px 12px rgba(52,211,153,0.15) !important; }
 .btn-danger  button { background: rgba(248,113,113,0.08) !important; border-color: rgba(248,113,113,0.22) !important; color: var(--danger) !important; }
 .btn-danger  button:hover { background: rgba(248,113,113,0.15) !important; color: var(--danger) !important; }
+.btn-icon button { padding: 0.25rem 0.55rem !important; min-height: unset !important; font-size: 0.72rem !important; border-radius: 7px !important; }
 
 /* ── Alerts ── */
 [data-testid="stInfo"]    { background: rgba(79,156,249,0.07)  !important; border: 1px solid rgba(79,156,249,0.18)  !important; border-radius: var(--radius) !important; color: var(--text-muted) !important; font-size: 0.81rem !important; }
@@ -175,6 +313,16 @@ hr { border-color: var(--border) !important; margin: 0.6rem 0 !important; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 10px; }
+
+/* ── Typing indicator ── */
+.typing-indicator { display: flex; gap: 5px; padding: 0.75rem 1.05rem; }
+.typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); opacity: 0.4; animation: typingPulse 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingPulse {
+    0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+    40% { opacity: 1; transform: scale(1); }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -187,15 +335,29 @@ if "rag" not in st.session_state:
     st.session_state.rag = None
 
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = []   # list of {role, content, ts}
+
+if "confirm_delete" not in st.session_state:
+    st.session_state.confirm_delete = None   # filename pending delete confirmation
+
+if "confirm_delete_all" not in st.session_state:
+    st.session_state.confirm_delete_all = False
 
 
 # ============================================================
-# CONSTANTS
+# CONSTANTS  (read from config so paths stay in one place)
 # ============================================================
 
-UPLOAD_DIR = "data/uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+_cfg_snapshot = None   # lazy cache
+
+def _get_paths():
+    cfg = load_config()
+    return {
+        "upload_dir":  "data/uploads",
+        "index_file":  cfg["embeddings_data"]["index_file_path"],
+        "chunks_file": cfg["embeddings_data"]["chunks_file_path"],
+        "kb_file":     cfg["embeddings_data"]["knowledge_base_path"],
+    }
 
 
 # ============================================================
@@ -203,22 +365,71 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ============================================================
 
 def get_uploaded_pdfs():
-    if not os.path.exists(UPLOAD_DIR):
-        return []
-    return sorted([
-        f for f in os.listdir(UPLOAD_DIR)
-        if f.lower().endswith(".pdf")
-    ])
+    paths = _get_paths()
+    d = paths["upload_dir"]
+    os.makedirs(d, exist_ok=True)
+    return sorted([f for f in os.listdir(d) if f.lower().endswith(".pdf")])
+
+
+def _wipe_vector_data():
+    """Delete FAISS index, chunks pickle, and knowledge-base pickle."""
+    paths = _get_paths()
+    for key in ("index_file", "chunks_file", "kb_file"):
+        p = paths[key]
+        if os.path.exists(p):
+            os.remove(p)
+    # Also reset use_existing_data in config
+    cfg = load_config()
+    cfg["use_existing_data"] = False
+    save_config(cfg)
+    st.session_state.rag = None   # force RAG reload
+
+
+def delete_single_pdf(filename: str):
+    """Remove one PDF and wipe all derived vector data."""
+    paths = _get_paths()
+    pdf_path = os.path.join(paths["upload_dir"], filename)
+    if os.path.exists(pdf_path):
+        os.remove(pdf_path)
+    _wipe_vector_data()
+    # Update documents list in config
+    cfg = load_config()
+    cfg["documents"] = [
+        d for d in cfg.get("documents", [])
+        if not d.endswith(filename)
+    ]
+    save_config(cfg)
+
+
+def delete_all_data():
+    """Remove every PDF and all vector/chunk/index data."""
+    paths = _get_paths()
+    upload_dir = paths["upload_dir"]
+    # Remove all PDFs
+    if os.path.exists(upload_dir):
+        for f in os.listdir(upload_dir):
+            if f.lower().endswith(".pdf"):
+                os.remove(os.path.join(upload_dir, f))
+    _wipe_vector_data()
+    cfg = load_config()
+    cfg["documents"] = []
+    cfg["use_existing_data"] = False
+    save_config(cfg)
+    st.session_state.messages = []
 
 
 def build_knowledge_base():
     config = load_config()
     pdf_files = get_uploaded_pdfs()
-    config["documents"] = [os.path.join(UPLOAD_DIR, p) for p in pdf_files]
+    paths = _get_paths()
+    config["documents"] = [
+        os.path.join(paths["upload_dir"], p) for p in pdf_files
+    ]
     config["use_existing_data"] = False
     save_config(config)
     with st.spinner("Building knowledge base… this may take a moment."):
         RAG(config, groq_api_key=groq_api_key)
+    config = load_config()
     config["use_existing_data"] = True
     save_config(config)
     st.session_state.rag = None
@@ -233,6 +444,11 @@ def on_badge(on):
     cls   = "badge-on"  if on else "badge-off"
     label = "ON"        if on else "OFF"
     return f'<span class="badge {cls}"><span class="badge-dot"></span>{label}</span>'
+
+
+def _fmt_ts(ts: float) -> str:
+    import datetime
+    return datetime.datetime.fromtimestamp(ts).strftime("%H:%M")
 
 
 # ============================================================
@@ -326,7 +542,7 @@ def show_chat():
             <span class="nd-icon">⚠️</span>
             <div class="nd-text">
                 <strong>No documents in the knowledge base.</strong><br>
-                Upload PDFs from the sidebar or the Configuration page, then rebuild the knowledge base.
+                Upload PDFs from the Configuration page, then rebuild the knowledge base.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -337,7 +553,7 @@ def show_chat():
         with st.spinner("Loading RAG system…"):
             st.session_state.rag = RAG(config, groq_api_key=groq_api_key)
 
-    # Message history
+    # ── Message history (custom bubble UI) ──
     if not st.session_state.messages:
         st.markdown("""
         <div class="empty-state">
@@ -347,48 +563,96 @@ def show_chat():
         </div>
         """, unsafe_allow_html=True)
     else:
+        st.markdown('<div class="chat-wrap">', unsafe_allow_html=True)
         for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+            role    = msg["role"]
+            content = msg["content"]
+            ts      = _fmt_ts(msg.get("ts", time.time()))
 
-    # Chat input
+            if role == "user":
+                st.markdown(f"""
+                <div class="msg-row-user">
+                    <div>
+                        <div class="bubble bubble-user">{content}</div>
+                        <div class="msg-ts">{ts}</div>
+                    </div>
+                    <div class="chat-avatar chat-avatar-user">👤</div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                # render assistant with sources stored separately
+                bubble_content = content
+                st.markdown(f"""
+                <div class="msg-row-ai">
+                    <div class="chat-avatar chat-avatar-ai">🔮</div>
+                    <div>
+                        <div class="bubble bubble-ai">{bubble_content}</div>
+                        <div class="msg-ts msg-ts-left">{ts}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Show sources expander if stored
+                sources = msg.get("sources", [])
+                if sources:
+                    with st.expander(
+                        f"📄 {len(sources)} source{'s' if len(sources) != 1 else ''} referenced"
+                    ):
+                        for src in sources:
+                            p0, p1 = src["pages"][0], src["pages"][1]
+                            st.markdown(f"""
+                            <div class="src-card">
+                                <span style="font-size:0.95rem;flex-shrink:0;margin-top:1px;">📄</span>
+                                <div style="flex:1;min-width:0;">
+                                    <div class="src-name">{src["source_file"]}</div>
+                                    <span class="src-pages">pp.&nbsp;{p0}&nbsp;–&nbsp;{p1}</span>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Chat input ──
     query = st.chat_input("Ask anything about your documents…")
 
     if query:
-        st.session_state.messages.append({"role": "user", "content": query})
-        with st.chat_message("user"):
-            st.markdown(query)
+        now = time.time()
+        st.session_state.messages.append({"role": "user", "content": query, "ts": now})
 
-        with st.spinner("Searching knowledge base…"):
+        # Show typing indicator placeholder
+        typing_placeholder = st.empty()
+        typing_placeholder.markdown("""
+        <div class="msg-row-ai" style="margin-top:0.6rem;">
+            <div class="chat-avatar chat-avatar-ai">🔮</div>
+            <div class="bubble bubble-ai">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.spinner(""):
             response = st.session_state.rag.ask(
                 query, hide_auto_regressive_output=True, groq_api_key=groq_api_key
             )
 
+        typing_placeholder.empty()
+
         answer  = response["answer"]
         sources = response["sources"]
 
-        with st.chat_message("assistant"):
-            st.markdown(answer)
+        st.session_state.messages.append({
+            "role":    "assistant",
+            "content": answer,
+            "sources": sources,
+            "ts":      time.time(),
+        })
+        st.rerun()
 
-            if sources:
-                with st.expander(
-                    f"📄 {len(sources)} source{'s' if len(sources) != 1 else ''} referenced"
-                ):
-                    for src in sources:
-                        p0, p1 = src["pages"][0], src["pages"][1]
-                        st.markdown(f"""
-                        <div class="src-card">
-                            <span style="font-size:0.95rem;flex-shrink:0;margin-top:1px;">📄</span>
-                            <div style="flex:1;min-width:0;">
-                                <div class="src-name">{src["source_file"]}</div>
-                                <span class="src-pages">pp.&nbsp;{p0}&nbsp;–&nbsp;{p1}</span>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-        st.session_state.messages.append({"role": "assistant", "content": answer})
-
-    # Clear button — only shown when there are messages
+    # ── Clear conversation ──
     if st.session_state.messages:
         st.markdown('<div class="btn-danger" style="margin-top:0.5rem;">', unsafe_allow_html=True)
         if st.button("🗑️ Clear conversation"):
@@ -403,6 +667,7 @@ def show_chat():
 
 def show_configuration():
     config = load_config()
+    paths  = _get_paths()
 
     st.markdown("""
     <div class="page-header">
@@ -418,6 +683,49 @@ def show_configuration():
     """, unsafe_allow_html=True)
 
     pdf_files = get_uploaded_pdfs()
+    upload_dir = paths["upload_dir"]
+
+    # ── Confirm delete-all banner ──
+    if st.session_state.confirm_delete_all:
+        st.warning(
+            "⚠️  This will delete **all PDFs** and wipe the FAISS index, chunks, and knowledge base. Continue?",
+            icon="🗑️",
+        )
+        col_yes, col_no = st.columns([1, 2])
+        with col_yes:
+            st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
+            if st.button("Yes, delete everything", use_container_width=True):
+                delete_all_data()
+                st.session_state.confirm_delete_all = False
+                st.success("✓ All PDFs and vector data deleted.")
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with col_no:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.confirm_delete_all = False
+                st.rerun()
+
+    # ── Per-file confirm banner ──
+    if st.session_state.confirm_delete and st.session_state.confirm_delete in pdf_files:
+        pending = st.session_state.confirm_delete
+        st.warning(
+            f"⚠️  Delete **{pending}**? This also wipes FAISS index, chunks, and knowledge base.",
+            icon="🗑️",
+        )
+        col_yes, col_no = st.columns([1, 2])
+        with col_yes:
+            st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
+            if st.button(f"Yes, delete {pending}", use_container_width=True):
+                delete_single_pdf(pending)
+                st.session_state.confirm_delete = None
+                st.success(f"✓ '{pending}' and its vector data deleted.")
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        with col_no:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.confirm_delete = None
+                st.rerun()
+
     col_docs, col_stats = st.columns([2, 1], gap="medium")
 
     with col_docs:
@@ -427,21 +735,54 @@ def show_configuration():
         )
         if pdf_files:
             for pdf in pdf_files:
-                st.markdown(f"""
-                <div class="doc-item">
-                    <span class="di-icon">📄</span>
-                    <span class="di-name">{pdf}</span>
-                </div>
-                """, unsafe_allow_html=True)
+                pdf_path = os.path.join(upload_dir, pdf)
+                pdf_size = fmt_size(os.path.getsize(pdf_path)) if os.path.exists(pdf_path) else "?"
+                col_name, col_del = st.columns([5, 1])
+                with col_name:
+                    st.markdown(f"""
+                    <div style="display:flex;align-items:center;gap:8px;padding:0.42rem 0;">
+                        <span style="color:var(--accent);font-size:0.85rem;">📄</span>
+                        <span style="font-size:0.8rem;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{pdf}</span>
+                        <span style="font-size:0.65rem;color:var(--text-dim);font-family:'DM Mono',monospace;flex-shrink:0;">{pdf_size}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with col_del:
+                    st.markdown('<div class="btn-danger btn-icon">', unsafe_allow_html=True)
+                    if st.button("🗑️", key=f"del_{pdf}", help=f"Delete {pdf} and wipe vector data"):
+                        st.session_state.confirm_delete = pdf
+                        st.session_state.confirm_delete_all = False
+                        st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown(
                 '<div class="doc-empty">No PDFs found in the knowledge base.</div>',
                 unsafe_allow_html=True,
             )
 
+        # Delete all button
+        if pdf_files:
+            st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
+            if st.button("🗑️ Delete ALL PDFs & Data", use_container_width=True,
+                         help="Remove every PDF and wipe FAISS index, chunks, knowledge base"):
+                st.session_state.confirm_delete_all = True
+                st.session_state.confirm_delete = None
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
     with col_stats:
+        # Check which derived files exist
+        index_exists = os.path.exists(paths["index_file"])
+        chunks_exist = os.path.exists(paths["chunks_file"])
+        kb_exists    = os.path.exists(paths["kb_file"])
+
+        def _file_badge(exists):
+            if exists:
+                return '<span style="color:var(--success);font-size:0.7rem;">✓ exists</span>'
+            return '<span style="color:var(--danger);font-size:0.7rem;">✗ missing</span>'
+
         st.markdown(
-            "<div style='font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:0.55rem;'>Stats</div>",
+            "<div style='font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:0.55rem;'>Stats &amp; Data Files</div>",
             unsafe_allow_html=True,
         )
         st.markdown(f"""
@@ -457,6 +798,18 @@ def show_configuration():
             <div class="sb-metric">
                 <span class="sb-metric-label">Overlap</span>
                 <span class="sb-metric-value">{config["overlap"]}</span>
+            </div>
+            <div class="sb-metric">
+                <span class="sb-metric-label">FAISS Index</span>
+                <span class="sb-metric-value">{_file_badge(index_exists)}</span>
+            </div>
+            <div class="sb-metric">
+                <span class="sb-metric-label">Chunks</span>
+                <span class="sb-metric-value">{_file_badge(chunks_exist)}</span>
+            </div>
+            <div class="sb-metric">
+                <span class="sb-metric-label">Knowledge Base</span>
+                <span class="sb-metric-value">{_file_badge(kb_exists)}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -489,7 +842,7 @@ def show_configuration():
             if st.button("➕ Add to KB", use_container_width=True,
                          help="Append uploaded PDFs to the existing knowledge base"):
                 for pdf in uploaded_files:
-                    with open(os.path.join(UPLOAD_DIR, pdf.name), "wb") as fh:
+                    with open(os.path.join(upload_dir, pdf.name), "wb") as fh:
                         fh.write(pdf.getbuffer())
                 build_knowledge_base()
                 st.success(f"✓ Added {len(uploaded_files)} document(s) and rebuilt KB.")
@@ -500,11 +853,11 @@ def show_configuration():
             st.markdown('<div class="btn-danger">', unsafe_allow_html=True)
             if st.button("🔄 Replace & Rebuild", use_container_width=True,
                          help="Remove all existing PDFs, save these, and rebuild"):
-                for fname in os.listdir(UPLOAD_DIR):
+                for fname in os.listdir(upload_dir):
                     if fname.lower().endswith(".pdf"):
-                        os.remove(os.path.join(UPLOAD_DIR, fname))
+                        os.remove(os.path.join(upload_dir, fname))
                 for pdf in uploaded_files:
-                    with open(os.path.join(UPLOAD_DIR, pdf.name), "wb") as fh:
+                    with open(os.path.join(upload_dir, pdf.name), "wb") as fh:
                         fh.write(pdf.getbuffer())
                 build_knowledge_base()
                 st.success("✓ Knowledge base replaced and rebuilt.")
@@ -607,8 +960,8 @@ def show_configuration():
         llm_model = st.text_input(
             "Model Name",
             value=config["llm_model"],
-            placeholder="e.g. qwen2.5:3b, llama3.2",
-            help="Ollama model identifier"
+            placeholder="e.g. llama-3.3-70b-versatile",
+            help="Groq model identifier"
         )
     with col2:
         conversation_max_history = st.slider(

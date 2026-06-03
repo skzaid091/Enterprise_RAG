@@ -24,6 +24,8 @@ class Reranker:
             reverse=True
         )
 
+        print("\nranked_results : ", ranked_results, "\n")
+
         return [
             result
             for _, result
