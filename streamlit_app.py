@@ -74,8 +74,11 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif !important; color: 
 /* ── Nav radio ── */
 [data-testid="stSidebar"] .stRadio > label { display: none; }
 [data-testid="stSidebar"] .stRadio [role="radiogroup"] { gap: 4px; display: flex; flex-direction: column; }
-[data-testid="stSidebar"] .stRadio label { background: transparent; border: 1px solid transparent; border-radius: var(--radius); padding: 0.55rem 0.85rem; cursor: pointer; transition: all 0.16s ease; color: var(--text-muted) !important; font-size: 0.87rem; font-weight: 500; width: 100%; display: flex; align-items: center; gap: 8px; }
-[data-testid="stSidebar"] .stRadio label:hover { background: var(--bg-hover); color: var(--text-primary) !important; border-color: var(--border); }
+[data-testid="stSidebar"] .stRadio label { background: transparent; border: 1px solid transparent; border-radius: var(--radius); padding: 0.55rem 0.85rem; cursor: pointer; color: var(--text-muted) !important; font-size: 0.87rem; font-weight: 500; width: 100%; display: flex; align-items: center; gap: 8px; }
+[data-testid="stSidebar"] .stRadio label:hover,
+[data-testid="stSidebar"] .stRadio [data-baseweb="radio"]:hover,
+[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:hover,
+[data-testid="stSidebar"] .stRadio div:has(input:not(:checked)) label:hover { background: transparent !important; color: var(--text-muted) !important; border-color: transparent !important; box-shadow: none !important; }
 [data-testid="stSidebar"] .stRadio [role="radio"] { display: none !important; }
 [data-testid="stSidebar"] .stRadio div:has(input:checked) label { background: var(--accent-glow) !important; border-color: rgba(79,156,249,0.28) !important; color: var(--accent) !important; }
 
@@ -508,37 +511,10 @@ with st.sidebar:
     # ── Navigation ──
     st.markdown('<div class="sb-label">Navigate</div>', unsafe_allow_html=True)
     page = st.radio(
-        "Navigation",
+        "",
         ["💬  Chat", "⚙️  Configuration"],
         label_visibility="collapsed",
     )
-
-    # ── Live system status ──
-    config = load_config()
-    pdf_count = len(get_uploaded_pdfs())
-
-    st.markdown('<div class="sb-label">System Status</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="sb-metrics">
-        <div class="sb-metric">
-            <span class="sb-metric-label">Retriever</span>
-            <span class="sb-metric-value">{config["retriever_type"].upper()}</span>
-        </div>
-        <div class="sb-metric">
-            <span class="sb-metric-label">Top K</span>
-            <span class="sb-metric-value">{config["top_k"]}</span>
-        </div>
-        <div class="sb-metric">
-            <span class="sb-metric-label">History</span>
-            <span class="sb-metric-value">{config["conversation_max_history"]}</span>
-        </div>
-        <div class="sb-metric">
-            <span class="sb-metric-label">Documents</span>
-            <span class="sb-metric-value">{pdf_count}</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # ============================================================
 # CHAT PAGE

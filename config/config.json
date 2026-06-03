@@ -1,11 +1,9 @@
 {
-    "documents": [
-        "data/uploads/Kubernetes-for-Beginners.pdf"
-    ],
+    "documents": [],
     "retrieval_evaluation_data_path": "data/evaluation/retrieval/research_paper_data.json",
     "chunk_size": 200,
     "overlap": 40,
-    "use_existing_data": true,
+    "use_existing_data": false,
     "embeddings_data": {
         "index_file_path": "data/indexes/enterprise_rag.index",
         "chunks_file_path": "data/metadata/chunks.pkl",
