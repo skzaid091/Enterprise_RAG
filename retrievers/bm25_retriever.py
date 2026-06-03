@@ -18,12 +18,13 @@ class BM25_Retriever:
                 chunk["text"].lower().split()
             )
 
-        self.bm25 = BM25Okapi(
-            self.tokenized_chunks
-        )
+        self.bm25 = BM25Okapi(self.tokenized_chunks) if self.tokenized_chunks else None
 
 
     def retrieve(self, query):
+
+        if not self.bm25:
+            return []
     
         tokenized_query = (
             query.lower().split()

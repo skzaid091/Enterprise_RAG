@@ -6,7 +6,17 @@ import time
 import shutil
 import streamlit as st
 
-groq_api_key = st.secrets["GROQ_API_KEY"]
+# ── Groq API key — fail early with a clear message ──
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+except (KeyError, FileNotFoundError):
+    st.error(
+        "**GROQ_API_KEY not found.**\n\n"
+        "Add it to your Streamlit secrets:\n"
+        "```\nGROQ_API_KEY = 'your-key-here'\n```\n"
+        "In Streamlit Cloud go to **Settings → Secrets**."
+    )
+    st.stop()
 
 from config.config_loader import load_config, save_config
 from RAG.rag import RAG
@@ -428,6 +438,20 @@ def build_knowledge_base():
     config["use_existing_data"] = False
     save_config(config)
     with st.spinner("Building knowledge base… this may take a moment."):
+        from loaders.PDF_Loader import PDFLoader
+        loader = PDFLoader()
+        empty_pdfs = []
+        for pdf_path in config["documents"]:
+            doc = loader.load(pdf_path)
+            total_words = sum(p.word_count for p in doc.pages)
+            if total_words == 0:
+                empty_pdfs.append(os.path.basename(pdf_path))
+        if empty_pdfs:
+            st.warning(
+                f"⚠️ The following PDF(s) appear to be scanned/image-only and contain no "
+                f"extractable text — they will be skipped:\n\n"
+                + "\n".join(f"• {f}" for f in empty_pdfs)
+            )
         RAG(config, groq_api_key=groq_api_key)
     config = load_config()
     config["use_existing_data"] = True
@@ -446,13 +470,27 @@ def on_badge(on):
     return f'<span class="badge {cls}"><span class="badge-dot"></span>{label}</span>'
 
 
+def _sanitize_config_documents():
+    """Remove document paths from config that no longer exist on disk.
+    Prevents fresh-deploy crashes where config.json lists old PDF paths."""
+    cfg = load_config()
+    existing = [p for p in cfg.get("documents", []) if os.path.exists(p)]
+    if len(existing) != len(cfg.get("documents", [])):
+        cfg["documents"] = existing
+        # If no docs exist, we can't use existing vector data either
+        if not existing:
+            cfg["use_existing_data"] = False
+        save_config(cfg)
+
+_sanitize_config_documents()
+
+
 def _fmt_ts(ts: float) -> str:
     import datetime
     return datetime.datetime.fromtimestamp(ts).strftime("%H:%M")
 
 
 # ============================================================
-# SIDEBAR
 # ============================================================
 
 with st.sidebar:

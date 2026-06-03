@@ -11,19 +11,21 @@ class FaissStore:
         self.chunks_file_path = embeddings_paths["chunks_file_path"]
         self.knowledge_base_path = embeddings_paths["knowledge_base_path"]
 
-        os.makedirs(os.path.dirname(self.index_file_path),     exist_ok=True)
-        os.makedirs(os.path.dirname(self.chunks_file_path),    exist_ok=True)
-        os.makedirs(os.path.dirname(self.knowledge_base_path), exist_ok=True)
-
         self.index = None
         self.chunk_metadata = None
         self.chunks = None
         
-        if not use_existing_data:
+        files_exist = all(
+            os.path.exists(p)
+            for p in [self.index_file_path, self.chunks_file_path, self.knowledge_base_path]
+        )
+
+        if not use_existing_data or not files_exist:
+            # Fresh build — wipe any stale files and start clean
             for path in [self.index_file_path, self.chunks_file_path, self.knowledge_base_path]:
                 if os.path.exists(path):
                     os.remove(path)
-                    
+
             self.index = faiss.IndexFlatIP(dim)
             self.chunk_metadata = []
             self.chunks = {}
@@ -52,6 +54,10 @@ class FaissStore:
 
 
     def save(self, chunks):
+        os.makedirs(os.path.dirname(self.index_file_path),    exist_ok=True)
+        os.makedirs(os.path.dirname(self.chunks_file_path),   exist_ok=True)
+        os.makedirs(os.path.dirname(self.knowledge_base_path),exist_ok=True)
+
         faiss.write_index(self.index, self.index_file_path)
         with open(self.knowledge_base_path, 'wb') as file:
             pickle.dump(self.chunk_metadata, file)
